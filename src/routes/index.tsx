@@ -7,6 +7,9 @@ import { FilterPanel, type Filters } from "@/components/FilterPanel";
 import { useCountries } from "@/hooks/useCountries";
 import { CountryTimeline } from "@/components/CountryTimeline";
 import { FirePixelControls } from "@/components/FirePixelControls";
+import { ReportExportPanel } from "@/components/ReportExportPanel";
+import { FireReportDocument } from "@/components/FireReportDocument";
+import type { FireReportData } from "@/lib/reports";
 import { MeasurementControls } from "@/components/MeasurementControls";
 import { useFirePixels, type PixelQuery } from "@/hooks/useFirePixels";
 import { formatNumber } from "@/lib/fire";
@@ -55,6 +58,10 @@ function FireScope() {
     return true;
   }), [all, filters]);
   const firePoints = pq.enabled && pixels.status === "ready" ? pixels.points : null;
+  const report = useMemo<FireReportData | null>(() => firePoints && pixels.status === "ready" ? {
+    sensor: pq.sensor, date: pq.date, days: pq.days, points: firePoints, total: pixels.total,
+    source: pixels.source, duplicatesRemoved: pixels.duplicatesRemoved ?? 0,
+  } : null, [firePoints, pixels, pq]);
   const measuredDistance = useMemo(() => measurePoints.length === 2
     ? distanceKm(measurePoints[0]!, measurePoints[1]!) : null, [measurePoints]);
   const nearbyFires = useMemo(() => measurePoints.length === 2 && firePoints
@@ -101,10 +108,10 @@ function FireScope() {
 
       {state.status === "ready" && all.length > 0 && (
         <>
-          <div className={`absolute bottom-3 left-3 right-3 z-10 max-h-[38vh] overflow-y-auto md:bottom-auto md:left-auto md:right-6 md:top-6 md:max-h-none md:w-80 ${selected ? "hidden md:block" : ""}`}>
+          <div className={`absolute bottom-3 left-3 right-3 z-10 max-h-[38vh] overflow-y-auto md:bottom-auto md:left-auto md:right-6 md:top-6 md:max-h-[calc(100dvh-16rem)] md:w-80 ${selected ? "hidden md:block" : ""}`}>
             <CountryInfoPanel feature={active} />
           </div>
-          <div className="absolute bottom-56 left-6 top-56 z-10 hidden w-64 space-y-3 overflow-y-auto md:block">
+          <div className="absolute bottom-6 left-6 top-56 z-10 hidden w-64 space-y-3 overflow-y-auto md:block">
             <FirePixelControls query={pq} onChange={setPq} status={pixelStatus} />
             <FilterPanel continents={continents} filters={filters} onChange={setFilters} shown={visible.length} total={all.length} />
             <MeasurementControls active={measureActive} points={measurePoints} bufferKm={bufferKm}
@@ -113,7 +120,9 @@ function FireScope() {
               onBufferChange={setBufferKm}
               onUndo={() => setMeasurePoints((points) => points.slice(0, -1))}
               onClear={() => setMeasurePoints([])} />
+            <ReportExportPanel report={report} countries={visible} />
           </div>
+          {report && <div className="print-only"><FireReportDocument report={report} /></div>}
           {calendarOpen ? (
             <div className="absolute bottom-3 left-3 right-3 z-20 max-h-[52vh] overflow-y-auto md:bottom-6 md:left-[19rem] md:right-[22rem]">
               <CountryTimeline feature={selected} countries={all}
@@ -125,7 +134,7 @@ function FireScope() {
               Open burning calendar
             </button>
           )}
-          <div className="absolute bottom-6 left-6 z-10 hidden w-56 md:block"><FireDensityLegend /></div>
+          <div className="absolute bottom-6 right-6 z-10 hidden w-56 md:block"><FireDensityLegend /></div>
           {visible.length === 0 && (
             <div className="absolute inset-x-0 top-1/2 z-10 mx-auto w-fit panel text-sm">No countries match these filters.</div>
           )}

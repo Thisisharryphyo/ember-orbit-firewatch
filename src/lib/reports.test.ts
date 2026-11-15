@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { fireDetectionsCsv, fireReportBaseName, fireReportDateRange } from "./reports";
+import { filteredCountriesCsv, fireDetectionsCsv, fireReportBaseName, fireReportDateRange } from "./reports";
 import type { FirePoint } from "@/types/firescope";
 
 const point: FirePoint = {
@@ -20,5 +20,14 @@ describe("filtered fire reports", () => {
       "firescope-harmonized-2026-11-14-3d",
     );
     expect(fireReportDateRange({ date: "2026-11-14", days: 3 })).toBe("2026-11-14 to 2026-11-16");
+  });
+});
+
+describe("filtered country report", () => {
+  it("lists each filtered country with its density", () => {
+    expect(filteredCountriesCsv([{ iso_a3: "MMR", country: "Myanmar", continent: "Asia", total_fire_pixels: 1200,
+      fire_density_per_10k_km2: 17.7, peak_burning_month: 3, mean_frp_mw: null }])).toBe(
+      "iso_a3,country,continent,total_fire_pixels,fire_density_per_10k_km2,peak_burning_month,mean_frp_mw\r\n" +
+      "MMR,Myanmar,Asia,1200,17.7,3,");
   });
 });

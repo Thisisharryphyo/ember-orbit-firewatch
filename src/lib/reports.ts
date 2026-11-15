@@ -60,3 +60,16 @@ export function downloadFireCsv(report: FireReportData): void {
   const blob = new Blob([fireDetectionsCsv(report.points)], { type: "text/csv;charset=utf-8" });
   downloadBlob(blob, `${fireReportBaseName(report)}.csv`);
 }
+
+export interface CountryReportRow {
+  iso_a3: string; country: string; continent: string | null; total_fire_pixels: number | null;
+  fire_density_per_10k_km2: number | null; peak_burning_month: number | null; mean_frp_mw: number | null;
+}
+
+/** CSV of the countries that pass the current continent / density filters. */
+export function filteredCountriesCsv(rows: CountryReportRow[]): string {
+  const header = ["iso_a3", "country", "continent", "total_fire_pixels", "fire_density_per_10k_km2", "peak_burning_month", "mean_frp_mw"];
+  const body = rows.map((r) => [r.iso_a3, r.country, r.continent ?? "", r.total_fire_pixels ?? "",
+    r.fire_density_per_10k_km2 ?? "", r.peak_burning_month ?? "", r.mean_frp_mw ?? ""]);
+  return [header, ...body].map((row) => row.map(csvCell).join(",")).join("\r\n");
+}

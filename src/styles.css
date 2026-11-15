@@ -181,3 +181,14 @@
   .seg:hover { color: var(--foreground); }
   .seg-on { background: var(--primary); color: var(--primary-foreground); }
 }
+
+.print-only { display: none; }
+@media print {
+  @page { size: A4; margin: 12mm; }
+  body * { visibility: hidden; }
+  .print-only, .print-only * { visibility: visible; }
+  .print-only { display: block; position: absolute; inset: 0 auto auto 0; width: 100%; }
+  .print-only { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .print-only tr { break-inside: avoid; }
+  main { overflow: visible !important; height: auto !important; }
+}
